@@ -16,7 +16,7 @@ y = data[:,1]
 color_dict = {'Iris-setosa': 'r',
               'Iris-versicolor': 'g',
               'Iris-virginica': 'b'}
-pl.scatter(x,y,color = [color_dict[i] for i in data[:,-1]], s = [30,40,50])
+pl.scatter(x,y,color = [color_dict[i] for i in data[:,-1]])
 # pl.legend(loc = 'upper right')
 # pl.figure()
 pl.show()
