@@ -9,12 +9,16 @@ raw = pd.read_csv('iris.csv')
 data = raw.values
 print data
 x = data[:,0]
+# print x
 y = data[:,1]
 # z = data[:,2]
 # w = data[:,3]
-pl.scatter(x,y,color = ['r','g','b'], s = [30,40,50], alpha=0.5)
+color_dict = {'Iris-setosa': 'r',
+              'Iris-versicolor': 'g',
+              'Iris-virginica': 'b'}
+pl.scatter(x,y,color = [color_dict[i] for i in data[:,-1]], s = [30,40,50])
 # pl.legend(loc = 'upper right')
-pl.figure()
+# pl.figure()
 pl.show()
 s = set(data[:,4])
-print s
+# print s
