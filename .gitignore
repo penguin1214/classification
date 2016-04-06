@@ -6,3 +6,5 @@
 *.txt
 
 /data
+
+*.csv
