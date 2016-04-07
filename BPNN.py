@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
 # -*- coding: utf-8 -*-
+from __future__ import division
 import math
 import random
 import string
+import pickle
 
+flowerLables = {0:'Iris-setosa',
+                 1:'Iris-versicolor',
+                 2:'Iris-virginica'}
 random.seed(0)
 # 生成区间[a, b)内的随机数
 def rand(a, b):
@@ -75,6 +80,7 @@ class NN:
                 sum = sum + self.ah[j] * self.wo[j][k]
             self.ao[k] = sigmoid(sum)
 
+        # print self.ao
         return self.ao[:]
 
     def backPropagate(self, targets, N, M):
@@ -85,7 +91,7 @@ class NN:
         # 计算输出层的误差
         output_deltas = [0.0] * self.no
         for k in range(self.no):
-            error = targets-self.ao[k]
+            error = targets[k]-self.ao[k]
             output_deltas[k] = dsigmoid(self.ao[k]) * error
 
         # 计算隐藏层的误差
@@ -115,12 +121,27 @@ class NN:
         error = 0.0
         # for k in range(len(targets)):
         #     error = error + 0.5*(targets[k]-self.ao[k])**2
-        error += 0.5*(targets-self.ao[k])**2
+        error += 0.5*(targets[k]-self.ao[k])**2
         return error
 
     def test(self, patterns):
+        count = 0
         for p in patterns:
-            print(p[0], '->', self.update(p[0]))
+            target = flowerLables[(p[1].index(1))]
+            result = self.update(p[0])
+            index = result.index(max(result))
+            print(p[0], ':', target, '->', flowerLables[index])
+            count += (target == flowerLables[index])
+            # result_str = flowerLables[index]
+            # if target == result_str:
+            #     count += 1
+            # else:
+            #     pass
+        accuracy = float(count/len(patterns))
+        print('accuracy: %-.9f' % accuracy)
+
+
+
 
     def weights(self):
         print('输入层权重:')
@@ -131,18 +152,18 @@ class NN:
         for j in range(self.nh):
             print(self.wo[j])
 
-    def train(self, patterns, iterations=1000, N=15, M=2):
+    def train(self, patterns, iterations=1000, N=0.1, M=0.01):
         # N: 学习速率(learning rate)
         # M: 动量因子(momentum factor)
         for i in range(iterations):
             error = 0.0
             for p in patterns:
-                inputs = p[0:4]
-                targets = p[4]
+                inputs = p[0]
+                targets = p[1]
                 self.update(inputs)
                 error = error + self.backPropagate(targets, N, M)
-            # if i % 100 == 0:
-            print('误差 %-.5f' % error)
+            if i % 100 == 0:
+                print('误差 %-.9f' % error)
 
 
 def demo():
@@ -169,28 +190,42 @@ import pandas as pd
 # features 0-3
 # labels 4
 def iris():
+    data = []
     # read dataset
     raw = pd.read_csv('iris.csv')
     raw_data = raw.values
-    data = raw_data[0:,0:4]
-    label = []
-    label_int = 0
-    for i in range(len(raw_data)):
+    raw_feature = raw_data[0:,0:4]
+    for i in range(len(raw_feature)):
+        ele = []
+        ele.append(list(raw_feature[i]))
         if raw_data[i][4] == 'Iris-setosa':
-            label_int = 1
-            label.append(label_int)
+           ele.append([1,0,0])
         elif raw_data[i][4] == 'Iris-versicolor':
-            label_int = 2
-            label.append(label_int)
+            ele.append([0,1,0])
         else:
-            label_int = 3
-            label.append(label_int)
-    l = np.asarray(label).T
-    print np.shape(l)
-    print np.shape(data)
-    training_set = np.c_[data, l]
-    nn = NN(4,3,3)
-    nn.train(training_set,iterations=1000)
+            ele.append([0,0,1])
+        data.append(ele)
+
+    # print data
+
+    # 随机排列data
+    random.shuffle(data)
+    # print data
+    training = data[0:100]
+    test = data[101:]
+    # print np.shape(l)
+    # print np.shape(data)
+    # training_set = np.c_[data, l]
+    nn = NN(4,7,3)
+    nn.train(training,iterations=10000)
+
+    # save weights
+    with open('wi.txt', 'w') as wif:
+        pickle.dump(nn.wi, wif)
+    with open('wo.txt', 'w') as wof:
+        pickle.dump(nn.wo, wof)
+
+    nn.test(test)
 
 if __name__ == '__main__':
     iris()
